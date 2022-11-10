@@ -2,4 +2,100 @@
 title: "Exploratory Data Analysis"
 ---
 
-Exploratory data analysis aims 
+Exploratory data analysis (EDA) is an initial data investigation, that [helps to inspect data and figure out what can (and cannot!) be done with data at hand, what trends can be observed and what statistical tests could be used](https://link.springer.com/chapter/10.1007/978-1-4842-2256-0_3#Sec24) (see "Data" section for information on data that we used). 
+
+<center>![Exploratory data analysis borrowed from Cox (2017) paper. URL: https://link.springer.com/chapter/10.1007/978-1-4842-2256-0_3#Sec24](https://user-images.githubusercontent.com/84614994/201210526-3a92cda1-9f16-4f1f-82e2-abec64f1080b.png)</center>
+
+Therefore, this section is dedicated to data exploration! Moreover, in this section we used A LOT of data visualisations. Data visualisation can benefit EDA by [injecting rigour as well as support inferences](https://onlinelibrary.wiley.com/doi/full/10.1111/gean.12338). Actually, [some argue that the sharp distinction between exploratory and explanatory data analyses has started blurring](https://www.annualreviews.org/doi/abs/10.1146/annurev-soc-071312-145551) as the size of datasets keeps increasing.
+
+# What is in our data?
+
+We have discussed the benefits of EDA, but what is in the datasets we have chosen?
+
+Our data can be broadly defined as providing country-level data on climate and individual-level data on attitudes towards climate action and demographic characteristics. Therefore, for the clarity purposes, we will stick to this division for now :)
+
+## Country-level EDA
+
+Well, to answer these questions we created an interactive Shiny dashboard! Our goal is to ensure that not only we understand the data but also those who listen to our data stories. Indeed, interactive data visualisation is a great way to make data (and data science!) more accessible to everyone.
+
+In the dashboard below you can visualise a variety of climate-related data by country over 20 years (2000-2019). For example, if you select Kenya and look at the "ren" (Renewable energy consumption (% of total final energy consumption)) variable, you will see a drop over the years... Why is it a case? And what might have caused this drop? Perhaps there was an increase in total energy consumption, so the reliance on fossil fuels increased?
+
+<center>![Shiny dashboard visualising climate data by country. URL: 6x2oh1-kika0.shinyapps.io/Dashboard](https://user-images.githubusercontent.com/84614994/201220196-22af648f-e9a5-4b1a-9ad4-0a7c5431096a.png)</center>
+
+## Individual-level EDA
+
+This subsecion will focus on World Values Survey data, which, as we mentioned in the "Data" section provides a representative sample for a number of countries.
+
+```{r}
+#| message = F,
+#| warning = F,
+#| results = F,
+#| eval = F
+# Load awesomeness
+library(tidyverse)
+library(sf)
+library(here)
+library(paletteer)
+
+# Load awesome data 
+# If you loaded this data while going through "Data" section then you don't have to load it again!
+# We are just aiming to make each section able to stand on its own 
+wvs <- read_csv("data/wvs.csv")
+geo_df <- st_read("data/climate_action_data.geojson")
+osm <- read_csv("result.csv")
+```
+
+### Is climate action more important than economic growth?
+
+In the "Introduction" section we mentioned that people tend to agree that climate change is an emergency. We wanted to examine this too. Therefore, we used a question from WVS asking if environmental protection should be prioritised over economic growth as a proxy for peoples attitudes towards climate action. If an individual thinks that environment matters more, then there's a positive attitude, otherwise a negative attitude is held.
+
+Visualisation below supports existing research and, indeed, in the last 20 years people (all countries considered) are more supportive towards climate change. The increase is really evident in the latest survey (Wave 7) which was carried out in 2017-2022.
+
+```{r}
+#| message = F,
+#| warning = F,
+#| results = F,
+#| eval = F
+theme_set(theme_light())
+# Explore how responses have changed over time
+env_count <- wvs %>% 
+  # Select evn columns
+  select(contains("env")) %>% 
+  #filter(if_any(everything(), is.na)) %>% 
+  # Reshape data for easy analysis
+  pivot_longer(everything(), names_to = "env", values_to = "opinion") %>% 
+#mutate(across(everything()))
+  # Drop missing values
+  drop_na() %>% 
+  mutate(opinion = factor(opinion)) %>% 
+  # Count number of respondents in each category
+  count(env, opinion) %>% 
+  group_by(env) %>% 
+  mutate(total = sum(n)) %>% 
+  ungroup() %>% 
+  mutate(pct = n/total) %>% 
+  # Rename rows
+  mutate(env = case_when(
+    env == "env_4_num" ~ "wave_4",
+    env == "env_5_num" ~ "wave_5",
+    env == "env_6_num" ~ "wave_6",
+    env == "env_7_num" ~ "wave_7"
+  ))
+
+# Visualize this
+env_count %>% 
+  ggplot(mapping = aes(x = env, y = pct*100)) +
+  geom_col(aes(fill = opinion), position = "dodge", alpha = 0.8) +
+  paletteer::scale_fill_paletteer_d("ggthemes::Tableau_10",
+                                    labels=c("protect environment", " Economic growth", "Other")) +
+  ggtitle("Protecting environment vs Economic growth") +
+  labs(x = "survey period",
+       y = "% of respondents in survey") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+<center>![A graph shows if respondents of all countries consider environmental protection as more important than economic growth](https://user-images.githubusercontent.com/84614994/201218578-4006d110-ab21-4e28-8b79-2bfc19ce19bc.png)</center>
+
+### 
+
+
