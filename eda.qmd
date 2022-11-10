@@ -2,3 +2,4 @@
 title: "Exploratory Data Analysis"
 ---
 
+Exploratory data analysis aims 
