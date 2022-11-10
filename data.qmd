@@ -179,14 +179,14 @@ Each WVS dataset has loads of variables, yet not all of them interest us at this
 We will extract the following variables:
 
 - country
-- views on the importance of protecting environment vs. economic growth
+- views on the importance of protecting environment vs. economic growth (we use this question as a proxy for climate change attitude)
 - sex (note: sex rather than gender is used in the surveys)
 - age
 - education
 - social class
 - income level
 
-Also we'll give more understandable column names.
+Also we will give more understandable column names.
 
 ```{r}
 #| message = F,

@@ -346,14 +346,14 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <p>We will extract the following variables:</p>
 <ul>
 <li>country</li>
-<li>views on the importance of protecting environment vs.&nbsp;economic growth</li>
+<li>views on the importance of protecting environment vs.&nbsp;economic growth (we use this question as a proxy for climate change attitude)</li>
 <li>sex (note: sex rather than gender is used in the surveys)</li>
 <li>age</li>
 <li>education</li>
 <li>social class</li>
 <li>income level</li>
 </ul>
-<p>Also we’ll give more understandable column names.</p>
+<p>Also we will give more understandable column names.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>wvs7_sub <span class="ot">=</span> wvs7 <span class="sc">|&gt;</span> dplyr<span class="sc">::</span><span class="fu">select</span>(B_COUNTRY_ALPHA, Q111, Q260, X003R2, Q275R, Q287, Q288R)</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(wvs7_sub) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"country_7"</span>, <span class="st">"env_7"</span>, <span class="st">"sex_7"</span>, <span class="st">"age_7"</span>, <span class="st">"education_7"</span>, <span class="st">"class_7"</span>, <span class="st">"income_7"</span>)</span>
@@ -464,12 +464,14 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <section id="data-source-8-openstreetmap" class="level3">
 <h3 class="anchored" data-anchor-id="data-source-8-openstreetmap">Data source 8 (OpenStreetMap)</h3>
 <p><a href="https://www.openstreetmap.org/about">OpenStreetMap</a> data is a global project aiming to create a free map of the world. It contains data on various data on buildings and roads. We used OSM data to collect the count of <a href="https://wiki.openstreetmap.org/wiki/Tag:power%3Dgenerator">renewable energy generators</a>. For historical data we relied on <a href="https://ohsome.org/apps/dashboard/">ohsome dashboard</a>.</p>
+<center>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="https://user-images.githubusercontent.com/84614994/201127048-46d63ff0-0b5c-47ab-a401-7dfd2cd73351.png" class="img-fluid figure-img"></p>
 <p></p><figcaption aria-hidden="true" class="figure-caption">An example of retrieving the count of renewable energy generators in Poland from 2007 to 2022</figcaption><p></p>
 </figure>
 </div>
+</center>
 
 
 </section>
