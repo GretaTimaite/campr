@@ -9,7 +9,9 @@ website:
     left:
       - href: index.qmd
         text: Home
-      - about.qmd
+      - href: team.qmd
+        text: Team
+      
 
 format:
   html:

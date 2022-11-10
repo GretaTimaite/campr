@@ -1,11 +1,15 @@
----
-title: "campr"
----
+This website has been developed to support [**CampR's**](https://gretatimaite.github.io/campr/about.html) outputs for the [UN Big Data Hackathon Youth Track 2022](https://unstats.un.org/bigdata/events/2022/hackathon/).
 
-This is a Quarto website.
+We chose **The impact of Climate Change on society as part of monitoring SDG13** theme and we had 72 hours to deliver a) presentation explaining our solution; b) 10 mins video; c) code. This website stores our presentation, video, and code.
 
-To learn more about Quarto websites visit <https://quarto.org/docs/websites>.
+<center>![The image has been borrowed from the UN website: https://sdgs.un.org/goals/goal13](https://user-images.githubusercontent.com/84614994/201050446-49ba9e18-f87f-4eef-aaf3-22daaae69c87.png)</center>
 
-```{r}
-1 + 1
-```
+Before you dive into this website, you might want to have a look at the **structure of the website** and what to expect in each:
+
+- Home tab is where you are right now!
+- Team tab is, well, about us ;)
+- Introduction tab introduces the theme and its significance
+- Data tab will tell you about the data we used and pre-processing it has undergone
+- EDA tab is for exploratory data analysis 
+
+We really want to highlight that we aimed to produce reproducible code with good documentation, so you can replicate it and reuse for your own needs! If something doesn't work -- reach out, we will be grateful.
