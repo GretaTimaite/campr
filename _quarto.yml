@@ -11,6 +11,8 @@ website:
         text: Home
       - href: team.qmd
         text: Team
+      - href: introduction.qmd
+        text: Introduction
       
 
 format:
