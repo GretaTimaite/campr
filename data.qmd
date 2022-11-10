@@ -1,0 +1,316 @@
+---
+title: "Data"
+---
+
+<center>![The Turing Way project illustration by Scriberia. Used under a CC-BY 4.0 licence. DOI: 10.5281/zenodo.3332807.](https://user-images.githubusercontent.com/84614994/201124650-e925dbde-ab31-4baf-8367-1390b915b993.jpeg)</center> 
+
+In this section the **focus is on data sources** used in the project:
+
+1. What data was used and why;
+2. How were datasets processed;
+3. What problems and limitations were encountered and this might impact results;
+
+**Reproducibility:** we used only open data and tools in this project to maximise reproducibility and promote open research. If one copy and pastes code from the code chunks in this document, it should be fully reproducible. Alternatively, one can examine R scripts corresponding to different parts of our analysis that can be found in this [GitHub repository](https://github.com/GretaTimaite/UNBigDataHackathon2022) or https://github.com/GretaTimaite/UNBigDataHackathon2022
+
+### Data sources
+
+For this project we used several datasets, which you can download [from here](https://github.com/GretaTimaite/UNBigDataHackathon2022/releases/tag/v0.1):
+
+1. CO2 emissions per country;
+2. Land temperature per country;
+3. GDP per capita data; 
+4. Renewable energy consumption (% of total final energy consumption);
+5. Frequencies of climate-related natural disasters;
+6. World data from {spData} package in R for country geometries;
+7. World Values Survey (WVS);
+8. OpenStreetMap (OSM) data
+
+
+### Getting 1-6 data sources 
+
+First we will download 1-6 data sources as listed above.
+
+Some of the data was provided by the Hackathon organisers, so exact source is unclear but they kindly allowed us to share them on GitHub. Thus, this is where we store the data. 
+
+Do not forget to change the path to the file in the code below!!! 
+
+```{r}
+#| message = F,
+#| warning = F,
+#| results = F,
+#| eval = F
+  
+# CO2 emissions data
+co2emissions = readxl::read_excel("data/CO2emissionsbycountry.xlsx", # path to the file 
+                                  skip = 2)
+
+# GDP per capita data 
+gdp = readxl::read_excel("data/gdp.xls", 
+                         skip = 2)
+
+# Renewable energy consumption (% of total final energy consumption)
+renewable_ec = readxl::read_excel("data/Renewable energy consumption (% of total final energy consumption).xlsx",
+                                  skip = 2)
+
+# Frequencies of climate-related natural disasters
+climate_disasters = readxl::read_excel("data/Climate-related_Disasters_Frequency.xlsx")
+
+
+# Land temperatures
+land_temp = readr::read_csv("data/GlobalLandTemperaturesByCountry.csv")
+
+# our world :)
+world = spData::world
+```
+
+#### Subsetting data
+
+We will subset all data, so only data from 2000 to 2019 remains. The reason behind it that a number of countries do not have data prior, for example, 1990 as they part of the USSR and gained independence only after 1990. We think that data on the last 20 years will provide us enough longitudinal information. 
+
+Moreover, we will drop some of the columns that will not serve us. 
+
+```{r}
+#| message = F,
+#| warning = F,
+#| results = F,
+#| eval = F
+
+co2emissions_clean = co2emissions |> 
+  dplyr::select(c(1:2,45:64)) # select relevant columns
+colnames(co2emissions_clean) = paste0("co2_", colnames(co2emissions_clean)) # rename column names so we can identify them once joined with other datasets
+
+gdp_clean = gdp |> 
+  dplyr::select(c(1:2,45:64))
+colnames(gdp_clean) = paste0("gdp_", colnames(gdp_clean))
+
+renewable_clean = renewable_ec |> 
+  dplyr::select(c(1:2,45:64))
+colnames(renewable_clean) = paste0("ren_", colnames(renewable_clean))
+
+disasters_clean = climate_disasters |> 
+  dplyr::filter(Indicator == "Climate related disasters frequency, Number of Disasters: TOTAL") |> # focus on total number of disasters
+  dplyr::select(c(2:4,32:51))
+colnames(disasters_clean) = paste0("dis_", colnames(disasters_clean))
+
+# land temperature data requires more attention...
+# we'll aggregate, so we have an average yearly temp instead of monthly, which is a bit too granular for our purposes
+land_temp_clean = land_temp |> 
+  dplyr::mutate(year = lubridate::year(dt)) |> # extract year
+  dplyr::filter(year >= 2000 & year <=2019) |> # select data from 2000 to 2019
+  dplyr::group_by(Country, year) |> # group by country and year
+  dplyr::summarise(average_temp = mean(AverageTemperature)) |> # find out the average yearly temperature
+  tidyr::pivot_wider(names_from = year, values_from = average_temp) # reshape to wide format
+colnames(land_temp_clean) = paste0("temp_", colnames(land_temp_clean)) # give columns new names!
+```
+
+Note: these datasets do not contain all the data that we would love to have. For example, land temperature dataset has records only up until 2013-09-01 (e.g. 2013). Thus, more recent data is missing and it has an impact on how much insight we can deliver. For example, if we are to examine the connection between land temperature and CO2 emissions, we would be able to do it up until 2013 even though we have data on CO2 emissions up to 2020.
+
+#### Joining data
+
+In this section we will join all the data we have subsetted so far. 
+
+```{r}
+#| message = F,
+#| warning = F,
+#| results = F,
+#| eval = F
+
+joined_df = cbind(co2emissions_clean, gdp_clean, renewable_clean)  # Leave data on natural disasters aside for now
+
+# OK, let's drop some columns as they contain the same information
+joined_df_clean = joined_df |> 
+  dplyr::select( -c("ren_Country Name", "ren_Country Code", "gdp_Country Name", "gdp_Country Code"))
+
+# Join natural disasters data with our world
+# World data contains country's geometry shapes, thus allowing us to plot a map!
+# But first remove any NA values in ISO2 (we will use this column to join datasets)
+world_clean_iso = world |>
+  dplyr::filter(!is.na(iso_a2)) # remove NAs in ISO
+disasters_clean_iso = disasters_clean |> 
+  dplyr::filter(!is.na(dis_ISO2)) # remove NAs in ISO
+# Left join
+disasters_world = dplyr::left_join(world_clean_iso, disasters_clean_iso,
+                                   by = c("iso_a2" = "dis_ISO2" ))
+
+# Left join with land temperature
+dis_temp = dplyr::left_join(disasters_world, land_temp_clean,
+                            by = c("name_long" = "temp_Country"))
+
+# Let's plot disasters_world for sanity check (uncomment)
+# tmap::tm_shape(disasters_world) + 
+#   tmap::tm_polygons(col = "dis_F2019")
+
+# now let's join all the datasets into one grand dataset :)
+climate_action_data = dplyr::left_join(dis_temp, joined_df_clean,
+                                       by = c("dis_ISO3" = "co2_Country Code"))
+# let's plot avergae yearly temperature in 2012!
+tmap::tm_shape(climate_action_data) + 
+  tmap::tm_polygons(col = "temp_2012")
+```
+
+<center>![Average temperature in 2012](https://user-images.githubusercontent.com/84614994/201115230-8c7229f1-5152-41a5-81f6-507f6cce48eb.png)</center>
+
+
+### Data source 7 (World Values Survey)
+
+World Values Survey (WVS) is a global high-quality survey that collects nationally-representative data on values. The data is open to everyone to use for non-commercial purposes as long as data files themselves are not redistributed and correct citations provided. Given terms of use, we ask you to d[ownload data for waves 4-7 from their website](https://www.worldvaluessurvey.org/WVSContents.jsp) and the recommended format is .sav (for SPSS).
+
+```{r}
+#| message = F,
+#| warning = F,
+#| results = F,
+#| eval = F
+# read waves 4-7
+wvs4 = foreign::read.spss("data/WV4_Data_spss_v20201117.sav",
+                          to.data.frame = TRUE) # import as dataframe (otherwise it will be a list)
+wvs5 = foreign::read.spss("data/WV5_Data_Spss_v20180912.sav",
+                          to.data.frame = TRUE)
+wvs6 = foreign::read.spss("data/WV6_Data_sav_v20201117.sav", 
+                          to.data.frame = TRUE)
+wvs7 = foreign::read.spss("data/WVS_Cross-National_Wave_7_spss_v4_0.sav", 
+                          to.data.frame = TRUE)
+```
+
+
+#### Subsetting
+
+Each WVS dataset has loads of variables, yet not all of them interest us at this point.
+
+We will extract the following variables:
+
+- country
+- views on the importance of protecting environment vs. economic growth
+- sex (note: sex rather than gender is used in the surveys)
+- age
+- education
+- social class
+- income level
+
+Also we'll give more understandable column names.
+
+```{r}
+#| message = F,
+#| warning = F,
+#| results = F,
+#| eval = F
+wvs7_sub = wvs7 |> dplyr::select(B_COUNTRY_ALPHA, Q111, Q260, X003R2, Q275R, Q287, Q288R)
+colnames(wvs7_sub) = c("country_7", "env_7", "sex_7", "age_7", "education_7", "class_7", "income_7")
+
+wvs6_sub = wvs6 |> dplyr::select(B_COUNTRY_ALPHA, V81, V240, X003R2, V248, V238, V239)
+colnames(wvs6_sub) = c("country_6", "env_6", "sex_6", "age_6", "education_6", "class_6", "income_6")
+
+wvs5_sub = wvs5 |> dplyr::select(V2, V104, V235, V237, V238, V252, V253) # I cannot believe this dataset doesn't have ISO code...
+colnames(wvs5_sub) = c("country_5", "env_5", "sex_5", "age_5", "education_5", "class_5", "income_5")
+
+wvs4_sub = wvs4 |> dplyr::select(B_COUNTRY_ALPHA, V36, V223, V225R2, V226, V235, V236)
+colnames(wvs4_sub) = c("country_4", "env_4", "sex_4", "age_4", "education_4", "class_4", "income_4")
+```
+
+#### Recoding and joining 
+
+In this section we will change variable values from character to numeric in the hope of easing the interpretation. 
+Then we will join all four waves into one dataset.
+
+```{r}
+#| message = F,
+#| warning = F,
+#| results = F,
+#| eval = F
+
+# find out max length of each, we'll use this information to create NA cells, so length of all datasets is the same
+# then we'll be able to join them easily
+
+max_length = max(c(nrow(wvs4_sub), nrow(wvs5_sub), nrow(wvs6_sub), nrow(wvs7_sub)))
+max_length # wave 6 has most obervations
+
+wvs7_sub = wvs7_sub |> 
+  dplyr::mutate (env_7_num = env_7 |> as.numeric(),
+                # env_7_num = c(wvs7_sub$env_7_num, rep(NA, max_length - nrow(wvs7_sub))),
+                sex_7_num = sex_7 |> as.numeric(),
+                # sex_7_num = c(wvs7_sub$sex_7_num, rep(NA, max_length - nrow(wvs7_sub))),
+                age_7_num = age_7 |> as.numeric(),
+                # age_7_num = c(wvs7_sub$age_7_num, rep(NA, max_length - nrow(wvs7_sub))),
+                education_7_num = education_7 |> as.numeric(),
+                # education_7_num = c(wvs7_sub$education_7_num, rep(NA, max_length - nrow(wvs7_sub))),
+                income_7_num = income_7 |> as.numeric(),
+                # income_7_num = c(wvs7_sub$income_7_num, rep(NA, max_length - nrow(wvs7_sub))),
+                )
+
+wvs7_new = data.frame(env_7_num = c(wvs7_sub$env_7_num, rep(NA, max_length - nrow(wvs7_sub))),
+                      sex_7_num = c(wvs7_sub$sex_7_num, rep(NA, max_length - nrow(wvs7_sub))),
+                      age_7_num = c(wvs7_sub$age_7_num, rep(NA, max_length - nrow(wvs7_sub))),
+                      education_7_num = c(wvs7_sub$education_7_num, rep(NA, max_length - nrow(wvs7_sub))),
+                      income_7_num = c(wvs7_sub$income_7_num, rep(NA, max_length - nrow(wvs7_sub))),
+                      country_7 = c(wvs7_sub$country_7, rep(NA, max_length - nrow(wvs7_sub)))
+                      )
+
+wvs6_sub = wvs6_sub |> 
+  dplyr::mutate(env_6_num = env_6 |> as.numeric() |> as.factor(),
+                sex_6_num = sex_6 |> as.numeric(),
+                age_6_num = age_6 |> as.numeric(),
+                education_6_num = education_6 |> as.numeric(),
+                income_6_num = income_6 |> as.numeric())
+
+wvs6_new = data.frame(env_6_num = c(wvs6_sub$env_6_num, rep(NA, max_length - nrow(wvs6_sub))),
+                      sex_6_num = c(wvs6_sub$sex_6_num, rep(NA, max_length - nrow(wvs6_sub))),
+                      age_6_num = c(wvs6_sub$age_6_num, rep(NA, max_length - nrow(wvs6_sub))),
+                      education_6_num = c(wvs6_sub$education_6_num, rep(NA, max_length - nrow(wvs6_sub))),
+                      income_6_num = c(wvs6_sub$income_6_num, rep(NA, max_length - nrow(wvs6_sub))),
+                      country_6 = c(wvs6_sub$country_6, rep(NA, max_length - nrow(wvs6_sub)))
+)
+
+wvs5_sub = wvs5_sub |> 
+  dplyr::mutate(env_5_num = env_5 |> as.numeric() |> as.factor(),
+                sex_5_num = sex_5 |> as.numeric(),
+                age_5_num = age_5 |> as.numeric() |> cut(breaks = c(0, 29, 49, 120), labels = c(1,2,3)),
+                education_5_num = education_5 |> as.numeric(),
+                income_5_num = income_5 |> as.numeric())
+
+# for some reason countries are returned as levels in integer form (e.g. 1) rather than character (i.e. "Andora"),
+# so we'll need to do tricks here :)
+unique_vals = wvs5_sub$country_5 |> unique() |> as.character()
+wvs5_new = data.frame(env_5_num = c(wvs5_sub$env_5_num, rep(NA, max_length - nrow(wvs5_sub))),
+                      sex_5_num = c(wvs5_sub$sex_5_num, rep(NA, max_length - nrow(wvs5_sub))),
+                      age_5_num = c(wvs5_sub$age_5_num, rep(NA, max_length - nrow(wvs5_sub))),
+                      education_5_num = c(wvs5_sub$education_5_num, rep(NA, max_length - nrow(wvs5_sub))),
+                      income_5_num = c(wvs5_sub$income_5_num, rep(NA, max_length - nrow(wvs5_sub))),
+                      country_5 = c(wvs5_sub$country_5, rep(NA, max_length - nrow(wvs5_sub))) |> factor(labels = unique_vals)
+)
+
+
+wvs4_sub = wvs4_sub |> 
+  dplyr::mutate(env_4_num = env_4 |> as.numeric() |> as.factor(),
+                sex_4_num = sex_4 |> as.numeric(),
+                age_4_num = age_4 |> as.numeric(),
+                education_4_num = education_4 |> as.numeric(),
+                income_4_num = income_4 |> as.numeric())
+
+wvs4_new = data.frame(env_4_num = c(wvs4_sub$env_4_num, rep(NA, max_length - nrow(wvs4_sub))),
+                      sex_4_num = c(wvs4_sub$sex_4_num, rep(NA, max_length - nrow(wvs4_sub))),
+                      age_4_num = c(wvs4_sub$age_4_num, rep(NA, max_length - nrow(wvs4_sub))),
+                      education_4_num = c(wvs4_sub$education_4_num, rep(NA, max_length - nrow(wvs4_sub))),
+                      income_4_num = c(wvs4_sub$income_4_num, rep(NA, max_length - nrow(wvs4_sub))),
+                      country_4 = c(wvs4_sub$country_4, rep(NA, max_length - nrow(wvs4_sub)))
+)
+
+
+# sanity check that levels match numeric values (uncomment)
+# wvs7_sub$age_7 |> unique()
+# wvs7_sub$age_7_num |> unique()
+# wvs6_sub$age_6 |> unique()
+# wvs6_sub$age_6_num |> unique()
+# wvs5_sub$age_5 |> unique()
+# wvs5_sub$age_5_num |> unique()
+# wvs4_sub$age_4 |> unique()
+# wvs4_sub$age_4_num |> unique()
+
+
+```
+
+
+### Data source 8 (OpenStreetMap)
+
+[OpenStreetMap](https://www.openstreetmap.org/about) data is a global project aiming to create a free map of the world. It contains data on various data on buildings and roads. We used OSM data to collect the count of [renewable energy generators](https://wiki.openstreetmap.org/wiki/Tag:power%3Dgenerator). For historical data we relied on [ohsome dashboard](https://ohsome.org/apps/dashboard/). 
+
+<center>![An example of retrieving the count of renewable energy generators in Poland from 2007 to 2022](https://user-images.githubusercontent.com/84614994/201127048-46d63ff0-0b5c-47ab-a401-7dfd2cd73351.png)</center>
+
