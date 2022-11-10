@@ -1,7 +1,7 @@
 
 ### Say hi to the team!
 
-<center>![Greta (left), Kristina (center), and Eric (right) having the best time of our lives at the GISRUK 2022 conference ;)](https://user-images.githubusercontent.com/84614994/201132242-85ffbe40-bdef-4e21-97c3-9073e829b70a.jpeg)</center>
+<center>![Greta (left), Kristina (center), and Eric (right) having the best time of their lives at the GISRUK 2022 conference ;)](https://user-images.githubusercontent.com/84614994/201132242-85ffbe40-bdef-4e21-97c3-9073e829b70a.jpeg)</center>
 
 We met each other while enjoying our time at Leeds Institute for Data Analytics, but we never got a chance to work on the same project! So, we thought this hackathon could be a fun opportunity to do it and also take a break from all-things-Master's :)
 
