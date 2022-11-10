@@ -316,3 +316,24 @@ wvs4_new = data.frame(env_4_num = c(wvs4_sub$env_4_num, rep(NA, max_length - nro
 
 It is important to note that OSM data might not be complete, with some countries having more objects mapped that others. For example, developing countries, such as Iran, might have just started to consider the crowdsourced data and [examine OSM data quality](https://www.sciencedirect.com/science/article/pii/S0143622818312839#sec4) while in [Germany the community of mappers is large](https://www.researchgate.net/publication/267989860_Quantitative_Studies_on_the_Data_Quality_of_OpenStreetMap_in_Germany). Also OSM developed as a road mapping project, therefore other objects (such as renewable energy generators) could have started being mapped later at different rates in different regions. Therefore, it is crucial to consider OSM data with a pinch of salt when analysing results. Nevertheless we still consider that OSM data can provide interesting insights and provide data that otherwise would not be freely and openly accessible.
 
+```{r}
+#| message = F,
+#| warning = F,
+#| results = F,
+#| eval = F
+
+# import csv file containing OSM data
+osm = readxl::read_excel("data/osm.xlsx")
+
+# let's extract year from the date
+osm_clean = osm |> 
+  dplyr::mutate(year = lubridate::year(timestamp)
+                ) |> 
+  dplyr::select(-1)
+
+# save our new osm dataset
+# write.csv(osm_clean,
+#           "osm_clean.csv")
+
+```
+
