@@ -310,7 +310,9 @@ wvs4_new = data.frame(env_4_num = c(wvs4_sub$env_4_num, rep(NA, max_length - nro
 
 ### Data source 8 (OpenStreetMap)
 
-[OpenStreetMap](https://www.openstreetmap.org/about) data is a global project aiming to create a free map of the world. It contains data on various data on buildings and roads. We used OSM data to collect the count of [renewable energy generators](https://wiki.openstreetmap.org/wiki/Tag:power%3Dgenerator). For historical data we relied on [ohsome dashboard](https://ohsome.org/apps/dashboard/). 
+[OpenStreetMap](https://www.openstreetmap.org/about) data is a global project aiming to create a free map of the world through crowdsourcing. It contains data on various data on buildings and roads. We used OSM data to collect the count of [renewable energy generators](https://wiki.openstreetmap.org/wiki/Tag:power%3Dgenerator). For historical data we relied on [ohsome dashboard](https://ohsome.org/apps/dashboard/). 
 
-<center>![An example of retrieving the count of renewable energy generators in Poland from 2007 to 2022](https://user-images.githubusercontent.com/84614994/201127048-46d63ff0-0b5c-47ab-a401-7dfd2cd73351.png)</center>
+<center>![An example of retrieving the total count of renewable energy generators in Poland from 2007 to 2022](https://user-images.githubusercontent.com/84614994/201127048-46d63ff0-0b5c-47ab-a401-7dfd2cd73351.png)</center>
+
+It is important to note that OSM data might not be complete, with some countries having more objects mapped that others. For example, developing countries, such as Iran, might have just started to consider the crowdsourced data and [examine OSM data quality](https://www.sciencedirect.com/science/article/pii/S0143622818312839#sec4) while in [Germany the community of mappers is large](https://www.researchgate.net/publication/267989860_Quantitative_Studies_on_the_Data_Quality_of_OpenStreetMap_in_Germany). Also OSM developed as a road mapping project, therefore other objects (such as renewable energy generators) could have started being mapped later at different rates in different regions. Therefore, it is crucial to consider OSM data with a pinch of salt when analysing results. Nevertheless we still consider that OSM data can provide interesting insights and provide data that otherwise would not be freely and openly accessible.
 
