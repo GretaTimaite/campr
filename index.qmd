@@ -11,5 +11,6 @@ Before you dive into this website, you might want to have a look at the **struct
 - Introduction tab introduces the theme and its significance
 - Data tab will tell you about the data we used and pre-processing it has undergone
 - EDA tab is for exploratory data analysis 
+- Modelling is for our predictive model!
 
 We really want to highlight that we aimed to produce reproducible code with good documentation, so you can replicate it and reuse for your own needs! If something doesn't work -- reach out, we will be grateful.
