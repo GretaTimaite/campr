@@ -4,114 +4,15 @@ title: "Modelling"
 
 We have used exploratory data analysis to better understand what data we have and what can be done with it. In this section we will focus on building a model to predict the support of environmental protection over economic growth. 
 
-We are doing this with support of tidymodels and XGBoost!
-
-
-## Cleaning data for modeling
-
-### Do people living in areas with large usage of renewable energy have different opinions.
-
-```{r}
-#| message = F,
-#| warning = F,
-#| results = F,
-#| eval = F
-library(janitor)
-# Download open country code data
-country_codes <- read_csv("https://gist.githubusercontent.com/tadast/8827699/raw/f5cac3d42d16b78348610fc4ec301e9234f82821/countries_codes_and_coordinates.csv", show_col_types = FALSE) %>% 
-  clean_names() %>% 
-  select(country, country_code = alpha_3_code, iso_a2 = alpha_2_code)
-
-# Left join this to data
-df <- df %>% 
-  rename(country_code = country) %>% 
-  left_join(country_codes %>% select(-iso_a2), by = "country_code") %>% 
-  # Account for NA values due to dataset mismatches
-  mutate(
-    country = replace_na(country, "unknown"),
-    country = case_when(
-    country == "unknown" ~ country_code,
-    TRUE ~ country
-  )) %>%
-  # Add iso_a2 column due to climate action data
-  left_join(country_codes %>% select(-country_code), by = "country")
-```
-
-### Join data with climate action data
-
-```{r}
-#| message = F,
-#| warning = F,
-#| results = F,
-#| eval = F
-df %>% 
-  left_join(ca_df %>% 
-  select(iso_a2, contains("ren")) %>% 
-  st_drop_geometry() %>% 
-  as_tibble() %>% 
-  pivot_longer(!iso_a2, names_to = "ren", values_to = "ren_val") %>% 
-  group_by(iso_a2) %>% 
-  summarise(mean_ren = mean(ren_val), diff_ren = sum(diff(ren_val))),
-  by = "iso_a2") %>% 
-  #mutate(mean_ren = mean(across(starts_with("ren")))) %>% 
-  ggplot()
-```
-
-```{r}
-#| message = F,
-#| warning = F,
-#| results = F,
-#| eval = F
-ca_df %>% 
-  select(iso_a2, contains("ren")) %>% 
-  st_drop_geometry() %>% 
-  as_tibble() %>% 
-  pivot_longer(!iso_a2, names_to = "ren", values_to = "ren_val") %>% 
-  group_by(iso_a2) %>% 
-  summarise(mean_ren = mean(ren_val), diff_ren = sum(diff(ren_val))) %>% View()
-```
-
-```{r}
-#| message = F,
-#| warning = F,
-#| results = F,
-#| eval = F
-feature_summarize = function(tbl, feature){
-  tbl %>% 
-    select(iso_a2, contains(feature)) %>% 
-    pivot_longer(!iso_a2, names_to = "feature", values_to = "val") %>%
-    group_by(iso_a2) %>% 
-    mutate(val = replace_na(val, mean(val, na.rm = TRUE))) %>% 
-    group_by(iso_a2) %>% 
-    summarise(val = sum(diff(val))) %>% 
-    select(iso_a2, {{feature}} := val)
-    
-}
-```
-
-```{r}
-#| message = F,
-#| warning = F,
-#| results = F,
-#| eval = F
-ca_df %>% filter(iso_a2 == "KE") %>% select(contains("temp")) %>% st_drop_geometry() %>% slice(n = 1) %>% as.vector() %>% as.numeric()->xxc
-
-sum(diff(xxc))
-```
-
-```{r}
-#| message = F,
-#| warning = F,
-#| results = F,
-#| eval = F
-ca_df %>% 
-  st_drop_geometry() %>% 
-  feature_summarize(feature = "gdp_2") %>% View()
-```
+We are doing this with support of [tidymodels](https://www.tidymodels.org) and [XGBoost](https://xgboost.ai)!
 
 ## XGBOOST
 
-Create features
+There are several steps to create a useful model, including parameter estimation, model selection and tuning, and performance assessment.
+
+First, is selecting the most appropriate variables for prediction.
+
+In this section, we select the most appropriate variables based on previous EDA,
 
 ```{r}
 #| message = F,
@@ -121,7 +22,6 @@ Create features
 ca_dft <- ca_df %>% 
   st_drop_geometry() %>% 
   as_tibble()
-
 model_df <- df %>%
   # Modify education
   mutate(education_num = as.numeric(education_num)) %>% 
@@ -181,6 +81,10 @@ model_df <- df %>%
 
 ### Fit xg_boost model
 
+For the first part, data is split into two distinct sets, the training set and the test set. The training set (typically larger) is used to develop and optimize the model by fitting different models and investigating various feature engineering strategies etc.
+
+The other portion of the data is the *test set*. This is held in reserve until one or two models are chosen as the methods that are most likely to succeed.
+
 ```{r}
 #| message = F,
 #| warning = F,
@@ -189,29 +93,25 @@ model_df <- df %>%
 # Load tidymodels and xgboost
 library(tidymodels)
 library(xgboost)
-
 set.seed(2056)
-
-
 # Split data
 df_split <- model_df %>% 
   mutate(env_opinion = factor(env_opinion, levels = c("1", "2"))) %>% 
   initial_split(prop = 0.75)
-
 # Extract train and test sets
 train = training(df_split)
 test = testing(df_split)
-
 glue::glue(
   'The training set has {nrow(train)} observations \n',
   'The testing set has {nrow(test)} observations'
 )
-
 # Create resamples for model assessment
 train_folds = vfold_cv(train, v = 3)
 ```
 
 #### Create preprocessor
+
+Feature engineering entails reformatting predictor values to make them easier for a model to use effectively.
 
 ```{r}
 #| message = F,
@@ -224,7 +124,6 @@ prep_juice <- function(recipe){
     prep() %>% 
     juice()
 }
-
 boost_recipe <- recipe(
   env_opinion ~ age_num + education + income + 
     ren + dis_F + temp +co2_2 +gdp_2+ lifeExp, data = train) %>% 
@@ -235,11 +134,8 @@ boost_recipe <- recipe(
   step_dummy(all_nominal_predictors(), one_hot = TRUE) %>% 
   # Near zero variance filter
   step_nzv(all_predictors()) 
-
-
 # Just for sanity check
 #View(prep_juice(boost_recipe))
-
 # Create boosted tree model specification
 boost_spec <- boost_tree(
   #mtry = tune(),
@@ -253,17 +149,17 @@ boost_spec <- boost_tree(
   ) %>% 
   set_engine("xgboost") %>% 
   set_mode("classification")
-
 # Bind recipe and model specification together
 boost_wf <- workflow() %>% 
   add_recipe(boost_recipe) %>% 
   add_model(boost_spec)
-
 # Print workflow
 boost_wf
 ```
 
 ### Model training
+
+Boosted tree models typically have *tuning parameters* or *hyperparameters* must be specified ahead of time and can\'t be directly found from training data. These are unknown structural or other kind of values that have significant impact on the model but cannot be directly estimated from the data. Instead, hyperparameters are estimated using simulated data sets created from a process called resampling such as cross-validation or bootstrap resampling.
 
 ```{r}
 #| message = F,
@@ -273,25 +169,30 @@ boost_wf
 doParallel::registerDoParallel()
 set.seed(2056)
 #library(finetune)
-
 # Evaluation metrics during tuning
 eval_metrics <- metric_set(mn_log_loss, accuracy)
-xgb_race <- tune_grid(boost_wf, resamples = train_folds, grid = 7, metrics = eval_metrics)
-
+# xgb_race <- tune_grid(boost_wf, resamples = train_folds, grid = 7, metrics = eval_metrics)
 # # Efficient grid search via racing
-# xgb_race <- tune_race_anova(
-#   object = boost_wf,
-#   resamples = train_folds,
-#   metrics = eval_metrics,
-#   
-#   # Try out 20 different hyperparameter combinations
-#   grid = 20,
-#   control = control_race(
-#     verbose_elim = TRUE
-#   )
-# )
+xgb_race <- tune_race_anova(
+  object = boost_wf,
+  resamples = train_folds,
+  metrics = eval_metrics,
+  # Try out 20 different hyperparameter combinations
+  grid = 20,
+  control = control_race(
+    verbose_elim = TRUE
+  )
+)
+```
 
-
+```{r}
+#| message = F,
+#| warning = F,
+#| results = F,
+#| eval = F
+# Tibble with model with best accuracy
+xgb_race %>% 
+  show_best(metric = "accuracy")
 ```
 
 ```{r}
@@ -301,16 +202,21 @@ xgb_race <- tune_grid(boost_wf, resamples = train_folds, grid = 7, metrics = eva
 #| eval = F
 # Train model
 # Train then test
-
-xgb_model <- boost_wf %>% 
+# Finalize workflow
+final_boost_wf <- boost_wf %>% 
+  finalize_workflow(select_best(xgb_race, metric = "mn_log_loss" #mn_log_loss
+                    ))
+# Train then test
+xgb_model <- final_boost_wf %>% 
   last_fit(df_split, metrics = metric_set(accuracy, recall, spec, ppv, roc_auc, mn_log_loss, f_meas))
-
 # Collect metrics
 xgb_model %>% 
   collect_metrics()
 ```
 
-<center>![](https://user-images.githubusercontent.com/84614994/201264054-aa9683da-1e42-4b93-b7a2-480f167445fa.png)</center>
+![](https://user-images.githubusercontent.com/84614994/201264054-aa9683da-1e42-4b93-b7a2-480f167445fa.png)
+
+### Evaluate model performance
 
 ```{r}
 #| message = F,
@@ -322,10 +228,9 @@ xgb_model %>%
   collect_predictions() %>% 
   conf_mat(truth = env_opinion, estimate = .pred_class) %>% 
   autoplot(type = "heatmap")
-
 ```
 
-<center>![](https://user-images.githubusercontent.com/84614994/201263094-c7df5a9d-7d52-4afe-bab9-35032d6cc171.png)</center>
+![](https://user-images.githubusercontent.com/84614994/201263094-c7df5a9d-7d52-4afe-bab9-35032d6cc171.png)
 
 ```{r}
 #| message = F,
@@ -334,16 +239,48 @@ xgb_model %>%
 #| eval = F
 # Prettier?
 update_geom_defaults(geom = "rect", new = list(fill = "midnightblue", alpha = 0.7))
-
 xgb_model %>% 
   collect_predictions() %>% 
   conf_mat(env_opinion, .pred_class) %>% 
   autoplot()
 ```
 
-<center>![](https://user-images.githubusercontent.com/84614994/201262304-5d48bf0a-2f23-4f64-b268-09a62ecf0771.jpeg)</center>
+![](https://user-images.githubusercontent.com/84614994/201262304-5d48bf0a-2f23-4f64-b268-09a62ecf0771.jpeg)
+
+The performance metrics considered are:=
+
+Recall: `TP/(TP + FN)` defined as the proportion of positive results out of the number of samples which were actually positive. Also known as `sensitivity`.
+
+Specificity: `TN/(TN + FP)` defined as the proportion of negative results out of the number of samples which were actually negative.
+
+Precision: `TP/(TP + FP)` defined as the proportion of predicted positives that are actually positive. Also called [positive predictive value](https://en.wikipedia.org/wiki/Positive_predictive_value "Positive predictive value")
+
+Accuracy: `TP + TN/(TP + TN + FP + FN)` The percentage of labels predicted accurately for a sample.
+
+```{r}
+#| message = F,
+#| warning = F,
+#| results = F,
+#| eval = F
+# Collect metrics
+xgb_model %>% 
+  collect_metrics() %>% 
+  filter(.metric %in% c("accuracy", "recall", "f_meas", "mn_log_loss"))
+```
+
+**Insights from modeling results**:
+
+-   The model was able to correctly distinguish 60% of the respondents
+
+-   The model has a high ability to accurately distinguish respondents who support climate action.
+
+-   F Measure: A weighted average of the precision and recall, with best being 1 and worst being 0.
+
+Overall, for only tuning the number of trees, the model performed quite decently.
 
 ## Model interpretability
+
+In this section, we explore why the model makes the predictions it does.
 
 ```{r}
 #| message = F,
@@ -354,13 +291,11 @@ options(scipen = 999)
 # Extract trained workflow
 xgb_wf <- xgb_model %>% 
   extract_workflow()
-
 # Extract variable importance
 library(vip)
 vi <- xgb_wf %>% 
   extract_fit_parsnip() %>% 
   vi()
-
 vi
 ```
 
@@ -381,7 +316,7 @@ vi %>%
   theme(plot.title = element_text(hjust = 0.5))
 ```
 
-<center>![](https://user-images.githubusercontent.com/84614994/201262768-a7886a2b-07dd-41a1-83d5-96eb833a7ac4.png)</center>
+![](https://user-images.githubusercontent.com/84614994/201262768-a7886a2b-07dd-41a1-83d5-96eb833a7ac4.png)
 
 ```{r}
 #| message = F,
@@ -390,7 +325,6 @@ vi %>%
 #| eval = F
 # SHAP for xgboost
 library(SHAPforxgboost)
-
 # Prepare shap values for plotting. Requires a matrix
 opinion_shap <- shap.prep(
   # Actual Boost engine
@@ -404,7 +338,6 @@ opinion_shap <- shap.prep(
   top_n = 8
   
 )
-
 shap.plot.summary(opinion_shap)
 ```
 
