@@ -2,15 +2,14 @@
 title: "Modelling"
 ---
 
-We have used exploratory data analysis to better understand what data we have and what can be done with it. In this section we will focus on building a model to predict the support of environmental protection over economic growth.
+We have used exploratory data analysis to better understand what data we have and what can be done with it. In this section we will focus on building a model to predict the support of environmental protection over economic growth. 
 
 We are doing this with support of tidymodels and XGBoost!
 
-Alas, to spoil the ending, we did not manage to successfully implement it. However, there is an example (see "Small model trained on several random model hyperparameters" section) that works to illustrate the point.
 
 ## Cleaning data for modeling
 
-## Do people living in areas with large usage of renewable energy have different opinions?
+### Do people living in areas with large usage of renewable energy have different opinions.
 
 ```{r}
 #| message = F,
@@ -22,6 +21,7 @@ library(janitor)
 country_codes <- read_csv("https://gist.githubusercontent.com/tadast/8827699/raw/f5cac3d42d16b78348610fc4ec301e9234f82821/countries_codes_and_coordinates.csv", show_col_types = FALSE) %>% 
   clean_names() %>% 
   select(country, country_code = alpha_3_code, iso_a2 = alpha_2_code)
+
 # Left join this to data
 df <- df %>% 
   rename(country_code = country) %>% 
@@ -95,6 +95,7 @@ feature_summarize = function(tbl, feature){
 #| results = F,
 #| eval = F
 ca_df %>% filter(iso_a2 == "KE") %>% select(contains("temp")) %>% st_drop_geometry() %>% slice(n = 1) %>% as.vector() %>% as.numeric()->xxc
+
 sum(diff(xxc))
 ```
 
@@ -120,6 +121,7 @@ Create features
 ca_dft <- ca_df %>% 
   st_drop_geometry() %>% 
   as_tibble()
+
 model_df <- df %>%
   # Modify education
   mutate(education_num = as.numeric(education_num)) %>% 
@@ -187,17 +189,24 @@ model_df <- df %>%
 # Load tidymodels and xgboost
 library(tidymodels)
 library(xgboost)
+
 set.seed(2056)
+
+
 # Split data
 df_split <- model_df %>% 
+  mutate(env_opinion = factor(env_opinion, levels = c("1", "2"))) %>% 
   initial_split(prop = 0.75)
+
 # Extract train and test sets
 train = training(df_split)
 test = testing(df_split)
+
 glue::glue(
   'The training set has {nrow(train)} observations \n',
   'The testing set has {nrow(test)} observations'
 )
+
 # Create resamples for model assessment
 train_folds = vfold_cv(train, v = 3)
 ```
@@ -215,6 +224,7 @@ prep_juice <- function(recipe){
     prep() %>% 
     juice()
 }
+
 boost_recipe <- recipe(
   env_opinion ~ age_num + education + income + 
     ren + dis_F + temp +co2_2 +gdp_2+ lifeExp, data = train) %>% 
@@ -225,12 +235,15 @@ boost_recipe <- recipe(
   step_dummy(all_nominal_predictors(), one_hot = TRUE) %>% 
   # Near zero variance filter
   step_nzv(all_predictors()) 
+
+
 # Just for sanity check
 #View(prep_juice(boost_recipe))
+
 # Create boosted tree model specification
 boost_spec <- boost_tree(
   #mtry = tune(),
-  trees = tune(),
+  trees = 50,
   #min_n = tune(),
   #tree_depth = tune(),
   learn_rate = 0.01,
@@ -240,10 +253,12 @@ boost_spec <- boost_tree(
   ) %>% 
   set_engine("xgboost") %>% 
   set_mode("classification")
+
 # Bind recipe and model specification together
 boost_wf <- workflow() %>% 
   add_recipe(boost_recipe) %>% 
   add_model(boost_spec)
+
 # Print workflow
 boost_wf
 ```
@@ -258,9 +273,11 @@ boost_wf
 doParallel::registerDoParallel()
 set.seed(2056)
 #library(finetune)
+
 # Evaluation metrics during tuning
 eval_metrics <- metric_set(mn_log_loss, accuracy)
 xgb_race <- tune_grid(boost_wf, resamples = train_folds, grid = 7, metrics = eval_metrics)
+
 # # Efficient grid search via racing
 # xgb_race <- tune_race_anova(
 #   object = boost_wf,
@@ -274,11 +291,8 @@ xgb_race <- tune_grid(boost_wf, resamples = train_folds, grid = 7, metrics = eva
 #   )
 # )
 
+
 ```
-
-
-### Small model trained on several random model hyperparameters
-Alas, we kind of failed to successfully run, but here's a small model trained on several random model hyperparameters that do not return the best results, but gives an idea of what we aimed to achieve.
 
 ```{r}
 #| message = F,
@@ -287,11 +301,110 @@ Alas, we kind of failed to successfully run, but here's a small model trained on
 #| eval = F
 # Train model
 # Train then test
+
 xgb_model <- boost_wf %>% 
   last_fit(df_split, metrics = metric_set(accuracy, recall, spec, ppv, roc_auc, mn_log_loss, f_meas))
+
 # Collect metrics
 xgb_model %>% 
   collect_metrics()
 ```
 
+![](https://user-images.githubusercontent.com/84614994/201264054-aa9683da-1e42-4b93-b7a2-480f167445fa.png)
+
+```{r}
+#| message = F,
+#| warning = F,
+#| results = F,
+#| eval = F
+# Plot confusion matrix
+xgb_model %>% 
+  collect_predictions() %>% 
+  conf_mat(truth = env_opinion, estimate = .pred_class) %>% 
+  autoplot(type = "heatmap")
+
+```
+
+![](https://user-images.githubusercontent.com/84614994/201263094-c7df5a9d-7d52-4afe-bab9-35032d6cc171.png)
+
+```{r}
+#| message = F,
+#| warning = F,
+#| results = F,
+#| eval = F
+# Prettier?
+update_geom_defaults(geom = "rect", new = list(fill = "midnightblue", alpha = 0.7))
+
+xgb_model %>% 
+  collect_predictions() %>% 
+  conf_mat(env_opinion, .pred_class) %>% 
+  autoplot()
+```
+
+![](https://user-images.githubusercontent.com/84614994/201262304-5d48bf0a-2f23-4f64-b268-09a62ecf0771.jpeg)
+
+## Model interpretability
+
+```{r}
+#| message = F,
+#| warning = F,
+#| results = F,
+#| eval = F
+options(scipen = 999)
+# Extract trained workflow
+xgb_wf <- xgb_model %>% 
+  extract_workflow()
+
+# Extract variable importance
+library(vip)
+vi <- xgb_wf %>% 
+  extract_fit_parsnip() %>% 
+  vi()
+
+vi
+```
+
+Let's visualize these model interpretability results
+
+```{r}
+#| message = F,
+#| warning = F,
+#| results = F,
+#| eval = F
+vi %>% 
+  slice_max(Importance, n = 42) %>%
+  mutate(Variable = fct_reorder(Variable, Importance)) %>%
+  ggplot(mapping = aes(y = Variable, x = Importance)) +
+  geom_point(size = 3, color = "dodgerblue") + 
+  geom_segment(aes(y = Variable, yend = Variable, x = 0, xend = Importance), size = 2, color = "dodgerblue", alpha = 0.7 ) +
+  ggtitle(paste("Variable Importance plot of top", round(nrow(vi)/2), "variables")) +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+![](https://user-images.githubusercontent.com/84614994/201262768-a7886a2b-07dd-41a1-83d5-96eb833a7ac4.png)
+
+```{r}
+#| message = F,
+#| warning = F,
+#| results = F,
+#| eval = F
+# SHAP for xgboost
+library(SHAPforxgboost)
+
+# Prepare shap values for plotting. Requires a matrix
+opinion_shap <- shap.prep(
+  # Actual Boost engine
+  xgb_model = xgb_wf %>% 
+    extract_fit_engine(),
+  # predictors used to calculate SHAP values
+  X_train = boost_recipe %>% 
+    prep() %>% bake(has_role("predictor"),
+                 new_data = NULL,
+                 composition = "matrix"),
+  top_n = 8
+  
+)
+
+shap.plot.summary(opinion_shap)
+```
 
