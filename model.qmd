@@ -341,3 +341,14 @@ opinion_shap <- shap.prep(
 shap.plot.summary(opinion_shap)
 ```
 
+## Final comments
+
+From the VIP plot, we can observe which variables most/least influence the model performance.
+
+The life expectancy of the country where an individual lives in has the most predictive value for this model. This alludes to if the living conditions that lead to higher life expectancies such as health, diet/nutrition, respondents are more likely to support climate action. 
+
+The proportion of renewable energy consumed by respondents was the second most predictive feature. Perhaps if people experience the viability of renewable energy sources and the positive effects on their cities etc, they are more likely to support climate action.
+
+Other factors directly related to climate change are also considered important by the model in predicting opinion. As people observe effects of climate change, this would influence their thoughts.
+
+Higher education of literacy and certain age groups are important for the model.

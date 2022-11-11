@@ -110,5 +110,12 @@
     "title": "Modelling",
     "section": "Model interpretability",
     "text": "Model interpretability\nIn this section, we explore why the model makes the predictions it does.\n\noptions(scipen = 999)\n# Extract trained workflow\nxgb_wf <- xgb_model %>% \n  extract_workflow()\n# Extract variable importance\nlibrary(vip)\nvi <- xgb_wf %>% \n  extract_fit_parsnip() %>% \n  vi()\nvi\n\nLet’s visualize these model interpretability results\n\nvi %>% \n  slice_max(Importance, n = 42) %>%\n  mutate(Variable = fct_reorder(Variable, Importance)) %>%\n  ggplot(mapping = aes(y = Variable, x = Importance)) +\n  geom_point(size = 3, color = \"dodgerblue\") + \n  geom_segment(aes(y = Variable, yend = Variable, x = 0, xend = Importance), size = 2, color = \"dodgerblue\", alpha = 0.7 ) +\n  ggtitle(paste(\"Variable Importance plot of top\", round(nrow(vi)/2), \"variables\")) +\n  theme(plot.title = element_text(hjust = 0.5))\n\n\n\n# SHAP for xgboost\nlibrary(SHAPforxgboost)\n# Prepare shap values for plotting. Requires a matrix\nopinion_shap <- shap.prep(\n  # Actual Boost engine\n  xgb_model = xgb_wf %>% \n    extract_fit_engine(),\n  # predictors used to calculate SHAP values\n  X_train = boost_recipe %>% \n    prep() %>% bake(has_role(\"predictor\"),\n                 new_data = NULL,\n                 composition = \"matrix\"),\n  top_n = 8\n  \n)\nshap.plot.summary(opinion_shap)"
+  },
+  {
+    "objectID": "model.html#final-comments",
+    "href": "model.html#final-comments",
+    "title": "Modelling",
+    "section": "Final comments",
+    "text": "Final comments\nFrom the VIP plot, we can observe which variables most/least influence the model performance.\nThe life expectancy of the country where an individual lives in has the most predictive value for this model. This alludes to if the living conditions that lead to higher life expectancies such as health, diet/nutrition, respondents are more likely to support climate action.\nThe proportion of renewable energy consumed by respondents was the second most predictive feature. Perhaps if people experience the viability of renewable energy sources and the positive effects on their cities etc, they are more likely to support climate action.\nOther factors directly related to climate change are also considered important by the model in predicting opinion. As people observe effects of climate change, this would influence their thoughts.\nHigher education of literacy and certain age groups are important for the model."
   }
 ]
