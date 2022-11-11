@@ -176,7 +176,9 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   <li><a href="#is-climate-action-more-important-than-economic-growth" id="toc-is-climate-action-more-important-than-economic-growth" class="nav-link" data-scroll-target="#is-climate-action-more-important-than-economic-growth">Is climate action more important than economic growth?</a></li>
   <li><a href="#age-and-climate-change-attitudes" id="toc-age-and-climate-change-attitudes" class="nav-link" data-scroll-target="#age-and-climate-change-attitudes">Age and climate change attitudes</a></li>
   <li><a href="#income-and-climate-change-attitudes" id="toc-income-and-climate-change-attitudes" class="nav-link" data-scroll-target="#income-and-climate-change-attitudes">Income and climate change attitudes</a></li>
+  <li><a href="#education-and-climate-change-attitudes" id="toc-education-and-climate-change-attitudes" class="nav-link" data-scroll-target="#education-and-climate-change-attitudes">Education and climate change attitudes</a></li>
   </ul></li>
+  <li><a href="#final-comments" id="toc-final-comments" class="nav-link" data-scroll-target="#final-comments">Final comments</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -421,9 +423,60 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </figure>
 </div>
 </center>
-
-
 </section>
+<section id="education-and-climate-change-attitudes" class="level3">
+<h3 class="anchored" data-anchor-id="education-and-climate-change-attitudes">Education and climate change attitudes</h3>
+<p>Finally, we looked into education. In the Peoples’ Climate Vote it is reported that <a href="https://www.undp.org/publications/peoples-climate-vote">education is the most significant factor behind views towards climate change</a> – more educated individuals tend to recognise climate change as a global problem regardless of their country of origin. The results of the report align with the insights provided by Figure 6. It is clear that individuals with higher education (e.g.&nbsp;with Bachelor’s degree) are more supportive towards environmental protection.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>df <span class="sc">%&gt;%</span> </span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">education_num =</span> <span class="fu">as.numeric</span>(education_num)) <span class="sc">%&gt;%</span> </span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">education =</span> <span class="fu">case_when</span>(</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    education_num <span class="sc">&lt;</span> <span class="dv">3</span> <span class="sc">~</span> <span class="st">"lower"</span>,</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    education_num <span class="sc">&gt;</span> <span class="dv">4</span> <span class="sc">~</span> <span class="st">"higher"</span>,</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"middle"</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Account for changes in wave7 encoding</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">education =</span> <span class="fu">case_when</span>(</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>    wave <span class="sc">==</span> <span class="st">"wave_7"</span> <span class="sc">&amp;</span> education_num <span class="sc">==</span> <span class="dv">2</span> <span class="sc">~</span> <span class="st">"middle"</span>, </span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>    wave <span class="sc">==</span> <span class="st">"wave_7"</span> <span class="sc">&amp;</span> education_num <span class="sc">==</span> <span class="dv">3</span> <span class="sc">~</span> <span class="st">"higher"</span>,</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>    <span class="cn">TRUE</span> <span class="sc">~</span> education</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">education =</span> <span class="fu">factor</span>(education, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"higher"</span>, <span class="st">"middle"</span>, <span class="st">"lower"</span>))) <span class="sc">%&gt;%</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Count people in a wave sharing same education level and opinion</span></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(wave, env_opinion, education) <span class="sc">%&gt;%</span></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">drop_na</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>  <span class="co"># For people in a wave sharing the same education, what's their total</span></span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(education, wave) <span class="sc">%&gt;%</span> </span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Find how opinion varies among folks sharing the same education level</span></span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">total =</span> <span class="fu">sum</span>(n), <span class="at">pct =</span> n<span class="sc">/</span>total) <span class="sc">%&gt;%</span></span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> education, <span class="at">y =</span> pct<span class="sc">*</span><span class="dv">100</span>)) <span class="sc">+</span></span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>(<span class="fu">aes</span>(<span class="at">fill =</span> env_opinion), <span class="at">position =</span> <span class="st">"dodge"</span>, <span class="at">alpha =</span> <span class="fl">0.8</span>) <span class="sc">+</span></span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>  paletteer<span class="sc">::</span><span class="fu">scale_fill_paletteer_d</span>(<span class="st">"ggthemes::Tableau_10"</span>,</span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">labels=</span><span class="fu">c</span>(<span class="st">"protect environment"</span>, <span class="st">" Economic growth"</span>, <span class="st">"Other"</span>)) <span class="sc">+</span></span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Protecting environment vs Economic growth"</span>) <span class="sc">+</span></span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"education_levels"</span>,</span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"% of respondents in survey"</span>) <span class="sc">+</span></span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>)) <span class="sc">+</span></span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="fu">vars</span>(wave), <span class="at">scales =</span> <span class="st">"free_x"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<center>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://user-images.githubusercontent.com/84614994/201233457-343684b8-ccf6-4691-bfaf-05fa3dec173c.png" class="img-fluid figure-img"></p>
+<p></p><figcaption aria-hidden="true" class="figure-caption">Figure 6. A graph vsualises a relationship between education and support for environmental protection.</figcaption><p></p>
+</figure>
+</div>
+</center>
+</section>
+</section>
+<section id="final-comments" class="level2">
+<h2 class="anchored" data-anchor-id="final-comments">Final comments</h2>
+
+
 </section>
 </section>
 
