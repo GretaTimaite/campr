@@ -310,7 +310,7 @@ xgb_model %>%
   collect_metrics()
 ```
 
-![](https://user-images.githubusercontent.com/84614994/201264054-aa9683da-1e42-4b93-b7a2-480f167445fa.png)
+<center>![](https://user-images.githubusercontent.com/84614994/201264054-aa9683da-1e42-4b93-b7a2-480f167445fa.png)</center>
 
 ```{r}
 #| message = F,
@@ -325,7 +325,7 @@ xgb_model %>%
 
 ```
 
-![](https://user-images.githubusercontent.com/84614994/201263094-c7df5a9d-7d52-4afe-bab9-35032d6cc171.png)
+<center>![](https://user-images.githubusercontent.com/84614994/201263094-c7df5a9d-7d52-4afe-bab9-35032d6cc171.png)</center>
 
 ```{r}
 #| message = F,
@@ -341,7 +341,7 @@ xgb_model %>%
   autoplot()
 ```
 
-![](https://user-images.githubusercontent.com/84614994/201262304-5d48bf0a-2f23-4f64-b268-09a62ecf0771.jpeg)
+<center>![](https://user-images.githubusercontent.com/84614994/201262304-5d48bf0a-2f23-4f64-b268-09a62ecf0771.jpeg)</center>
 
 ## Model interpretability
 
@@ -381,7 +381,7 @@ vi %>%
   theme(plot.title = element_text(hjust = 0.5))
 ```
 
-![](https://user-images.githubusercontent.com/84614994/201262768-a7886a2b-07dd-41a1-83d5-96eb833a7ac4.png)
+<center>![](https://user-images.githubusercontent.com/84614994/201262768-a7886a2b-07dd-41a1-83d5-96eb833a7ac4.png)</center>
 
 ```{r}
 #| message = F,

@@ -454,7 +454,9 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>xgb_model <span class="sc">%&gt;%</span> </span>
 <span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect_metrics</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p><img src="https://user-images.githubusercontent.com/84614994/201264054-aa9683da-1e42-4b93-b7a2-480f167445fa.png" class="img-fluid"></p>
+<center>
+<img src="https://user-images.githubusercontent.com/84614994/201264054-aa9683da-1e42-4b93-b7a2-480f167445fa.png" class="img-fluid">
+</center>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot confusion matrix</span></span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>xgb_model <span class="sc">%&gt;%</span> </span>
@@ -462,7 +464,9 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">conf_mat</span>(<span class="at">truth =</span> env_opinion, <span class="at">estimate =</span> .pred_class) <span class="sc">%&gt;%</span> </span>
 <span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">autoplot</span>(<span class="at">type =</span> <span class="st">"heatmap"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p><img src="https://user-images.githubusercontent.com/84614994/201263094-c7df5a9d-7d52-4afe-bab9-35032d6cc171.png" class="img-fluid"></p>
+<center>
+<img src="https://user-images.githubusercontent.com/84614994/201263094-c7df5a9d-7d52-4afe-bab9-35032d6cc171.png" class="img-fluid">
+</center>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Prettier?</span></span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">update_geom_defaults</span>(<span class="at">geom =</span> <span class="st">"rect"</span>, <span class="at">new =</span> <span class="fu">list</span>(<span class="at">fill =</span> <span class="st">"midnightblue"</span>, <span class="at">alpha =</span> <span class="fl">0.7</span>))</span>
@@ -472,7 +476,9 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">conf_mat</span>(env_opinion, .pred_class) <span class="sc">%&gt;%</span> </span>
 <span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">autoplot</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p><img src="https://user-images.githubusercontent.com/84614994/201262304-5d48bf0a-2f23-4f64-b268-09a62ecf0771.jpeg" class="img-fluid"></p>
+<center>
+<img src="https://user-images.githubusercontent.com/84614994/201262304-5d48bf0a-2f23-4f64-b268-09a62ecf0771.jpeg" class="img-fluid">
+</center>
 </section>
 </section>
 <section id="model-interpretability" class="level2">
@@ -502,7 +508,9 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="fu">paste</span>(<span class="st">"Variable Importance plot of top"</span>, <span class="fu">round</span>(<span class="fu">nrow</span>(vi)<span class="sc">/</span><span class="dv">2</span>), <span class="st">"variables"</span>)) <span class="sc">+</span></span>
 <span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p><img src="https://user-images.githubusercontent.com/84614994/201262768-a7886a2b-07dd-41a1-83d5-96eb833a7ac4.png" class="img-fluid"></p>
+<center>
+<img src="https://user-images.githubusercontent.com/84614994/201262768-a7886a2b-07dd-41a1-83d5-96eb833a7ac4.png" class="img-fluid">
+</center>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># SHAP for xgboost</span></span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(SHAPforxgboost)</span>
