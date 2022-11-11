@@ -1,0 +1,5 @@
+---
+title: "Modelling"
+---
+
+We have used exploratory data analysis to better understand what data we have and what can be done with it. In this section we will focus on building a model to predict support to environmental protection over economic growth.
