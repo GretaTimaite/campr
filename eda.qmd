@@ -225,5 +225,57 @@ df %>%
 
 <center>![Figure 5. A graph vsualises a relationship between income and support for environmental protection.](https://user-images.githubusercontent.com/84614994/201231977-ed2d0753-b4a1-4fae-b426-850e583a1dd3.png)</center>
 
+### Education and climate change attitudes
+
+Finally, we looked into education. In the Peoples' Climate Vote it is reported that [education is the most significant factor behind views towards climate change](https://www.undp.org/publications/peoples-climate-vote) -- more educated individuals tend to recognise climate change as a global problem regardless of their country of origin. The results of the report align with the insights provided by Figure 6. It is clear that individuals with higher education (e.g. with Bachelor's degree) are more supportive towards environmental protection.
+
+```{r}
+#| message = F,
+#| warning = F,
+#| results = F,
+#| eval = F
+df %>% 
+  mutate(education_num = as.numeric(education_num)) %>% 
+  mutate(education = case_when(
+    education_num < 3 ~ "lower",
+    education_num > 4 ~ "higher",
+    TRUE ~ "middle"
+  ),
+  
+  # Account for changes in wave7 encoding
+  education = case_when(
+    wave == "wave_7" & education_num == 2 ~ "middle", 
+    wave == "wave_7" & education_num == 3 ~ "higher",
+    TRUE ~ education
+  ),
+  
+  
+  education = factor(education, levels = c("higher", "middle", "lower"))) %>%
+  # Count people in a wave sharing same education level and opinion
+  count(wave, env_opinion, education) %>%
+  drop_na() %>% 
+  # For people in a wave sharing the same education, what's their total
+  group_by(education, wave) %>% 
+  # Find how opinion varies among folks sharing the same education level
+  mutate(total = sum(n), pct = n/total) %>%
+  ungroup() %>% 
+  ggplot(mapping = aes(x = education, y = pct*100)) +
+  geom_col(aes(fill = env_opinion), position = "dodge", alpha = 0.8) +
+  paletteer::scale_fill_paletteer_d("ggthemes::Tableau_10",
+                                    labels=c("protect environment", " Economic growth", "Other")) +
+  ggtitle("Protecting environment vs Economic growth") +
+  labs(x = "education_levels",
+       y = "% of respondents in survey") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  facet_wrap(vars(wave), scales = "free_x")
+```
+
+<center>![Figure 6. A graph vsualises a relationship between education and support for environmental protection.](https://user-images.githubusercontent.com/84614994/201233457-343684b8-ccf6-4691-bfaf-05fa3dec173c.png)</center>
+
+## Final comments
+
+
+
+
 
 
