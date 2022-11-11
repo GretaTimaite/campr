@@ -16,25 +16,25 @@ Our data can be broadly defined as providing country-level data on climate and i
 
 ## Country-level EDA
 
-To answer data questions we created an interactive Shiny dashboard! Our goal is to ensure that not only we understand the data but also those who listen to our data stories. Indeed, interactive data visualisation is a great way to make data (and data science!) more accessible to everyone.
+To answer data questions we created an interactive RShiny dashboard! Our goal is to ensure that not only we understand the data but also those who listen to our data stories. Indeed, interactive data visualisation is a great way to make data (and data science!) more accessible to everyone.
 
 ### How has climate change-related country data changed over the years?
 
 In the dashboard below (Figure 1; link in the image label) you can visualise a variety of climate-related data by country over 20 years (2000-2019). For example, if you select Kenya and look at the "ren" (Renewable energy consumption (% of total final energy consumption)) variable, you will see a drop over the years... Why is it a case? And what might have caused this drop? Perhaps there was an increase in total energy consumption, so the reliance on fossil fuels increased?
 
-<center>![Figure 1. Shiny dashboard visualising climate data by country. URL: 6x2oh1-kika0.shinyapps.io/Dashboard](https://user-images.githubusercontent.com/84614994/201237668-bbd4c816-f303-4d61-a8b3-4bf401e184ef.png)</center>
+<center>![Figure 1. R Shiny dashboard visualising climate data by country. URL: 6x2oh1-kika0.shinyapps.io/Dashboard](https://user-images.githubusercontent.com/84614994/201237668-bbd4c816-f303-4d61-a8b3-4bf401e184ef.png)</center>
 
 ### Where do countries stand in relation to each other?
 
-In the previous subsection we explored climate-related data over time per country. It can show interesting trends, such as decreasing consumption of renewable energy in Kenya. But it might also be worthwhile to explore countries in relation to others. For example, the Shiny Dashboard below (Figure 2; link in the image label) shows CO2 emissions in 2019. China and the United States emerge as two countries releasing the most CO2 emissions with China clearly leading the way. If you look at the CO2 emissions data from 2000 (co2_2000), China and the unites States still stand out but, back them, the US was the main producer of CO2 emissions. What happened during this time? Perhaps this change is a result of [China's economic development](https://www.sciencedirect.com/science/article/pii/S0921800909003164), but does this mean that it is also is the leading country for the consumption of renewable energy in 2019? Alas, no. Interestingly, African countries consume the most renewable energy (see ren_2019 variable).
+In the previous subsection we explored climate-related data over time per country. It can show interesting trends, such as decreasing consumption of renewable energy in Kenya. But it might also be worthwhile to explore countries in relation to others. For example, the R Shiny Dashboard below (Figure 2; link in the image label) shows CO2 emissions in 2019. China and the United States emerge as two countries releasing the most CO2 emissions with China clearly leading the way. If you look at the CO2 emissions data from 2000 (co2_2000), China and the unites States still stand out but, back them, the US was the main producer of CO2 emissions. What happened during this time? Perhaps this change is a result of [China's economic development](https://www.sciencedirect.com/science/article/pii/S0921800909003164), but does this mean that it is also is the leading country for the consumption of renewable energy in 2019? Alas, no. Interestingly, African countries consume the most renewable energy (see ren_2019 variable).
 
-<center>![Figure 2. Shiny dashboard mapping climate data. URL: 6x2oh1-kika0.shinyapps.io/Dashboard](https://user-images.githubusercontent.com/84614994/201237181-65c7d936-6b33-4013-a2d3-868b4d511fc2.png)</center>
+<center>![Figure 2. R Shiny dashboard mapping climate data. URL: 6x2oh1-kika0.shinyapps.io/Dashboard](https://user-images.githubusercontent.com/84614994/201237181-65c7d936-6b33-4013-a2d3-868b4d511fc2.png)</center>
 
 On the other hand, we can see that the United States has remained, more or less, a leading country by the total number of renewable energy generators, while China is yet to catch up on this (Figure 3). Actually, the consumption of renewable energy has dropped in China (look at China in the EDA by Country). This is perhaps a result of increased economic activity, resulting in increased production of CO2 emissions but not expanding its renewable energy infrastructure.
 
 However, analysis of OSM data needs to be considered carefully as year-by-year change does not necessarily indicate how many new generators have been built. It might be a case that it used not to be a popular mapping object! For example, in 2007 there's no data but it does not mean generators were not there. Finally, it needs to be mentioned that only about 50 countries are on the map for the pragmatic reasons -- data for each country had to be downloaded seperately, thus making it a time-intensive activity. Therefore, we focused on countries that are also a part of WVS datasets, thus enabling some to join datasets to generate insights.
 
-<center>![Figure 3. Shiny dashboard mapping the total number of renewable energy generators based on OpenMapStreet data. URL: 6x2oh1-kika0.shinyapps.io/Dashboard](https://user-images.githubusercontent.com/84614994/201237452-bc7aff42-4573-4e48-80d4-f06196cc4da8.png)</center>
+<center>![Figure 3. R Shiny dashboard mapping the total number of renewable energy generators based on OpenMapStreet data. URL: 6x2oh1-kika0.shinyapps.io/Dashboard](https://user-images.githubusercontent.com/84614994/201237452-bc7aff42-4573-4e48-80d4-f06196cc4da8.png)</center>
 
 ## Individual-level EDA
 
@@ -124,6 +124,8 @@ env_count %>%
 ```
 
 <center>![Figure 4. A graph shows if respondents of all countries consider environmental protection as more important than economic growth](https://user-images.githubusercontent.com/84614994/201218578-4006d110-ab21-4e28-8b79-2bfc19ce19bc.png)</center>
+
+P.S. In the [R Shiny dashboard](https://6x2oh1-kika0.shinyapps.io/Dashboard/) you can also explore this quention on a country-level rather than aggregate data per wave.
 
 ### Age and climate change attitudes
 
